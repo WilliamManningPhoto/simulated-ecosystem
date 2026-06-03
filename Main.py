@@ -30,9 +30,9 @@ class World:
         self.foxes = []
 
     def print_counts(self):
-        print(f"Grass: {len(self.grass)}")
-        print(f"Rabbits: {len(self.rabbits)}")
-        print(f"Foxes: {len(self.foxes)}")
+        print("Grass on grid:", self.count_grass_on_grid())
+        print("Rabbits on grid:", self.count_rabbits_on_grid())
+        print("Foxes on grid:", self.count_foxes_on_grid())
 
     def time_step(self):
         self.move_rabbits()
@@ -150,6 +150,36 @@ class World:
                         self.grid[new_y][new_x] = g
 
         self.grass.extend(new_grass)
+
+    def count_grass_on_grid(self):
+        count = 0
+
+        for row in self.grid:
+            for cell in row:
+                if isinstance(cell, Grass):
+                    count += 1
+
+        return count
+    
+    def count_rabbits_on_grid(self):
+        count = 0
+
+        for row in self.grid:
+            for cell in row:
+                if isinstance(cell, Rabbit):
+                    count += 1
+
+        return count
+    
+    def count_foxes_on_grid(self):
+        count = 0
+
+        for row in self.grid:
+            for cell in row:
+                if isinstance(cell, Fox):
+                    count += 1
+
+        return count
 
 
     
