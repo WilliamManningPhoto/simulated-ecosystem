@@ -29,6 +29,16 @@ class World:
         self.rabbits = []
         self.foxes = []
 
+    def print_counts(self):
+        print(f"Grass: {len(self.grass)}")
+        print(f"Rabbits: {len(self.rabbits)}")
+        print(f"Foxes: {len(self.foxes)}")
+
+    def time_step(self):
+        self.move_rabbits()
+        self.move_foxes()
+        self.grow_grass()
+
     def spawn_grass(self):
         amount = random.randint(
             self.size * self.size // 4,
@@ -41,7 +51,7 @@ class World:
 
             g = Grass(x, y)
             self.grass.append(g) # Modify to change grass symbol
-            self.grid[y][x] = g
+            self.grid[y][x] = g # Access the grid above and place G where grass is
 
     def spawn_rabbits(self):
         amount = random.randint(
@@ -81,11 +91,6 @@ class World:
         if isinstance(cell, Fox):
             return "F"
         return "."
-    
-    def time_step(self):
-        self.move_rabbits()
-        self.move_foxes()
-        self.grow_grass()
 
     def move_rabbits(self):
         for rabbit in self.rabbits:
@@ -102,7 +107,7 @@ class World:
             rabbit.y = new_y
 
             self.grid[new_y][new_x] = rabbit # Put on grid in new position
-            
+
     def move_foxes(self):
         for fox in self.foxes:
             self.grid[fox.y][fox.x] = None # Get rid of current position
@@ -119,11 +124,6 @@ class World:
 
             self.grid[new_y][new_x] = fox # Put on grid in new position
     
-    def print_counts(self):
-        print(f"Grass: {len(self.grass)}")
-        print(f"Rabbits: {len(self.rabbits)}")
-        print(f"Foxes: {len(self.foxes)}")
-
     def grow_grass(self):
         new_grass = []
 
@@ -150,6 +150,8 @@ class World:
                         self.grid[new_y][new_x] = g
 
         self.grass.extend(new_grass)
+
+
     
 
 size = int(input("Enter the size of the world: "))
