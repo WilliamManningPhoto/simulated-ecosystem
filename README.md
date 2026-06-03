@@ -59,7 +59,8 @@ Enter the size of the world: (35 is for the best!)
 The simulation will run for a fixed number of timesteps and display a graph showing population changes over time.
 
 ## Example Population Graph
-(<img width="640" height="480" alt="Ecosystem_trial" src="https://github.com/user-attachments/assets/be3f39c8-3b09-4dc8-b499-0b360bebcc86" />)
+<img width="640" height="480" alt="Ecosystem_trial" src="https://github.com/user-attachments/assets/be3f39c8-3b09-4dc8-b499-0b360bebcc86" />
+
 The generated graph tracks:
 
 * Rabbit population
