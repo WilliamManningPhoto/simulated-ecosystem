@@ -320,7 +320,7 @@ world.print_grid()
 world.print_counts()
 input("Press Enter for next step...")
 
-steps = 100
+steps = 1000
 '''
 for i in range(steps):
     world.time_step()
@@ -329,7 +329,9 @@ for i in range(steps):
     input("Press Enter for next step...)"
 '''
 
-for _ in range(steps):
+for i in range(steps):
+    print("step:", i)
+
     world.time_step()
 
     world.history_rabbits.append(len(world.rabbits))
