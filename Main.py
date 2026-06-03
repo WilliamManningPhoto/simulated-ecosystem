@@ -5,19 +5,18 @@ class Grass:
         self.x = x
         self.y = y
 
-
-class Rabbit:
+class Animal:
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self.energy = 10
 
+class Rabbit(Animal):
+        prey = (Grass,)
 
-class Fox:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.energy = 20
+
+class Fox(Animal):
+        prey = (Rabbit,)
 
 
 class World:
@@ -35,8 +34,11 @@ class World:
         print("Foxes on grid:", self.count_foxes_on_grid())
 
     def time_step(self):
-        self.move_rabbits()
-        self.move_foxes()
+        for rabbit in self.rabbits:
+            self.move_animal(rabbit)
+
+        for fox in self.foxes:
+            self.move_animal(fox)
         self.grow_grass()
 
     def spawn_grass(self):
@@ -91,39 +93,78 @@ class World:
         if isinstance(cell, Fox):
             return "F"
         return "."
-
-    def move_rabbits(self):
-        for rabbit in self.rabbits:
-            self.grid[rabbit.y][rabbit.x] = None # Get rid of current position
-
-            dx, dy = random.choice([
-                (0,1),(0,-1),(1,0),(-1,0) # Choose next square randomly (update for ovement to grass)
-            ])
-
-            new_x = max(0, min(self.size-1, rabbit.x + dx)) # Modify old position with new one
-            new_y = max(0, min(self.size-1, rabbit.y + dy))
-
-            rabbit.x = new_x # Attatch new position to rabbit
-            rabbit.y = new_y
-
-            self.grid[new_y][new_x] = rabbit # Put on grid in new position
-
-    def move_foxes(self):
-        for fox in self.foxes:
-            self.grid[fox.y][fox.x] = None # Get rid of current position
-
-            dx, dy = random.choice([
-                (0,1),(0,-1),(1,0),(-1,0) # Choose next square randomly (update for movement to rabbit)
-            ])
-
-            new_x = max(0, min(self.size-1, fox.x + dx)) # Modify old position with new one
-            new_y = max(0, min(self.size-1, fox.y + dy))
-
-            fox.x = new_x # Attatch new position to Fox
-            fox.y = new_y
-
-            self.grid[new_y][new_x] = fox # Put on grid in new position
     
+    def find_nearest_prey(self, animal):
+
+        prey_types = animal.prey
+
+        for radius in range(1,self.size):
+
+            for dx in range(-radius, radius + 1):
+                for dy in range(-radius, radius + 1):
+
+                    x = animal.x + dx
+                    y = animal.y + dy
+
+                    if 0 <= x < self.size and 0 <= y < self.size:
+
+                        cell = self.grid[y][x]
+
+                        if isinstance(cell, prey_types):
+                            return (x, y)
+    
+    def move_towards(self,animal,target):
+        tx, ty = target
+
+        self.grid[animal.y][animal.x] = None
+
+        dx = 0
+        dy = 0
+
+        if tx > animal.x:
+            dx = 1
+        elif tx < animal.x:
+            dx = -1
+
+        if ty > animal.y:
+            dy = 1
+        elif ty < animal.y:
+            dy = -1
+
+        new_x = max(0, min(self.size - 1, animal.x + dx))
+        new_y = max(0, min(self.size - 1, animal.y + dy))
+
+        animal.x = new_x
+        animal.y = new_y
+
+        self.grid[new_y][new_x] = animal
+        
+    def random_move(self, animal):
+
+        self.grid[animal.y][animal.x] = None
+
+        dx, dy = random.choice([
+            (0,1), (0,-1), (1,0), (-1,0)
+        ])
+
+        new_x = max(0, min(self.size - 1, animal.x + dx))
+        new_y = max(0, min(self.size - 1, animal.y + dy))
+
+        animal.x = new_x
+        animal.y = new_y
+
+        self.grid[new_y][new_x] = animal
+
+    def move_animal(self,animal):
+        target = self.find_nearest_prey(animal)
+
+        if target:
+            self.move_towards(animal, target)
+        else:
+            self.random_move(animal)
+
+
+        
     def grow_grass(self):
         new_grass = []
 
@@ -180,9 +221,10 @@ class World:
                     count += 1
 
         return count
-
-
     
+
+
+
 
 size = int(input("Enter the size of the world: "))
 
