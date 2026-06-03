@@ -70,8 +70,8 @@ class World:
 
     def spawn_foxes(self):
         amount = random.randint(
-            self.size * self.size //40,
-            self.size * self.size //16
+            self.size * self.size //80,
+            self.size * self.size //32
         )
         for _ in range(amount):
             x = random.randint(0, self.size - 1) # Rate of spawning for foxes
@@ -96,7 +96,7 @@ class World:
     
     def find_nearest_prey(self, animal):
 
-        prey_types = animal.prey
+        prey_types = type(animal).prey
 
         for radius in range(1,self.size):
 
@@ -113,9 +113,34 @@ class World:
                         if isinstance(cell, prey_types):
                             return (x, y)
     
+    def eating(self, animal, x, y):
+
+        cell = self.grid[y][x]
+
+        if cell is None:
+            return
+
+        if isinstance(cell, animal.prey):
+
+            # energy gain rules
+            if isinstance(animal, Fox):
+                animal.energy += 5
+            elif isinstance(animal, Rabbit):
+                animal.energy += 5
+
+            # remove eaten object from lists
+            if isinstance(cell, Grass):
+                self.grass.remove(cell)
+            elif isinstance(cell, Rabbit):
+                self.rabbits.remove(cell)
+
+            # remove from grid
+            self.grid[y][x] = None
+
     def move_towards(self,animal,target):
         tx, ty = target
-
+        
+        # Remove from old position
         self.grid[animal.y][animal.x] = None
 
         dx = 0
@@ -134,11 +159,13 @@ class World:
         new_x = max(0, min(self.size - 1, animal.x + dx))
         new_y = max(0, min(self.size - 1, animal.y + dy))
 
+        self.eating(animal, new_x, new_y)
+
         animal.x = new_x
         animal.y = new_y
 
         self.grid[new_y][new_x] = animal
-        
+
     def random_move(self, animal):
 
         self.grid[animal.y][animal.x] = None
@@ -156,6 +183,13 @@ class World:
         self.grid[new_y][new_x] = animal
 
     def move_animal(self,animal):
+
+        animal.energy -= 1
+
+        if animal.energy <= 0:
+            self.kill(animal)
+            return
+        
         target = self.find_nearest_prey(animal)
 
         if target:
@@ -163,8 +197,19 @@ class World:
         else:
             self.random_move(animal)
 
+    
+    def kill(self, animal):
 
-        
+        self.grid[animal.y][animal.x] = None
+
+        if isinstance(animal, Rabbit):
+            self.rabbits.remove(animal)
+
+        elif isinstance(animal, Fox):
+            self.foxes.remove(animal)
+    
+
+
     def grow_grass(self):
         new_grass = []
 
@@ -223,9 +268,6 @@ class World:
         return count
     
 
-
-
-
 size = int(input("Enter the size of the world: "))
 
 world = World(size)
@@ -233,6 +275,8 @@ world.spawn_grass()
 world.spawn_rabbits()
 world.spawn_foxes()
 world.print_grid()
+world.print_counts()
+input("Press Enter for next step...")
 
 while True:
     world.time_step()
