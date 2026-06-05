@@ -18,6 +18,8 @@ class Hare_behaviour:
         self.standing_on = None
         
     def Movement(self, env):
+        self.energy -= 1
+
         directions = [(0,1), (0,-1), (1,0), (-1,0)]
         random.shuffle(directions)
 
@@ -39,6 +41,7 @@ class Hare_behaviour:
                 self.y = new_y
                 env.grid[new_y][new_x] = self    # Move to new tile
                 break
+
     
     def Escape_attack(self):
         print("escape the foxes attack on a unsuccessful attack")
@@ -46,12 +49,14 @@ class Hare_behaviour:
     def Eating(self): # Eating when item next to animal
         print("get eating working")
     
+    def Mate_finder(self):
+        print("find mate")
+    
     def Reproduction(self): # Reproduce with nearest other
         print("commit birth")
 
     def Age_animal(self):
         print("age dat boi")
-
 
 class Fox_behaviour:
     def __init__(self, x, y):
@@ -60,17 +65,58 @@ class Fox_behaviour:
         self.energy = 50
         self.standing_on = None
     
-    def Prey_finder(self): # Location of nearest prey
-        print("get prey finder working")
+    def Prey_finder(self, env): # Location of nearest prey
+        nearest = None
+        nearest_dist = float("inf")
+
+        for hare in env.hares:
+            dx = abs(hare.x - self.x)
+            dy = abs(hare.y - self.y)
+            dist = dx + dy
+
+            if dist <= self.vision_range and dist < nearest_dist:
+                nearest = hare
+                nearest_dist = dist
+        return nearest
+            
+    def Movement(self, env): # Movement of fox
+        self.energy -= 3
+
+        target = self.Prey_finder(env)
+
+        if target:
+            # Move toward hare
+            dx = 1 if target.x > self.x else -1 if target.x < self.x else 0
+            dy = 1 if target.y > self.y else -1 if target.y < self.y else 0
+        else:
+            # Roam randomly
+            dx, dy = random.choice([(0,1), (0,-1), (1,0), (-1,0)])
+
+        new_x = self.x + dx
+        new_y = self.y + dy
+
+        # Bounds check
+        if not (0 <= new_x < env.size_grid and 0 <= new_y < env.size_grid):
+            return
+
+        target_tile = env.grid[new_y][new_x]
+
+        # Only move to grass or empty tile
+        if isinstance(target_tile, Grass) or target_tile is None:
+            env.grid[self.y][self.x] = self.standing_on
+            self.standing_on = target_tile
+            self.x = new_x
+            self.y = new_y
+            env.grid[new_y][new_x] = self
         
-    def Movement(self): # Movement of foxes which hunt and follow
-        print("get movement working")
-    
     def Pounce(self):
         print("special ability to jump 2 squares?, extra energy?")
 
     def Eating(self): # Eating when item next to animal
         print("get eating working")
+    
+    def Mate_finder(self):
+        print("find mate")
     
     def Reproduction(self): # Reproduce with nearest other
         print("commit birth")
@@ -99,6 +145,7 @@ class Hare(Hare_behaviour):
 class Fox(Fox_behaviour):
     prey = (Hare,)
     reproduction_cooldown = 3
+    vision_range = 5
 
 class Simulation:
     def __init__(self,env): # Working year cycle (dt)
@@ -117,11 +164,18 @@ class Simulation:
             print(" ".join(self.env.symbol(cell) for cell in row))
 
     def Update_loop(self): # Update eat timestep (dt)
-        self.Print_map()
-
-        for hare in self.env.hares:
+            
+        for hare in list(self.env.hares):  # list() so we can remove during iteration
             hare.Movement(self.env)
+            if hare.energy <= 0:
+                self.env.remove_hare(hare)
 
+        for fox in list(self.env.foxes):
+            fox.Movement(self.env)
+            if fox.energy <= 0:
+                self.env.remove_fox(fox)
+
+        self.Print_map()
         print("Step", self.step)
         self.step += 1
 
@@ -255,11 +309,11 @@ class Environment:
             self.grid[y][x] = f
     
     def remove_hare(self, hare):
-        self.grid[hare.y][hare.x] = None
+        self.grid[hare.y][hare.x] = hare.standing_on
         self.hares.remove(hare)
 
     def remove_fox(self, fox):
-        self.grid[fox.y][fox.x] = None
+        self.grid[fox.y][fox.x] = fox.standing_on
         self.foxes.remove(fox)
 
     def symbol(self, cell):
