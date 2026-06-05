@@ -15,12 +15,33 @@ class Hare_behaviour:
         self.x = x
         self.y = y
         self.energy = 25
+        self.standing_on = None
         
-    def Movement(self): # Movement of animals
-        print("get movement working")
+    def Movement(self, env):
+        directions = [(0,1), (0,-1), (1,0), (-1,0)]
+        random.shuffle(directions)
 
-    def Prey_finder(self): # Location of nearest prey
-        print("get prey finder working")
+        for dx, dy in directions:
+            new_x = self.x + dx
+            new_y = self.y + dy
+
+            # Bounds check
+            if not (0 <= new_x < env.size_grid and 0 <= new_y < env.size_grid):
+                continue
+
+            target = env.grid[new_y][new_x]
+
+            # Move to grass or empty tile only
+            if isinstance(target, Grass) or target is None:
+                env.grid[self.y][self.x] = self.standing_on  # Restore old tile
+                self.standing_on = target # Remember new tile
+                self.x = new_x
+                self.y = new_y
+                env.grid[new_y][new_x] = self    # Move to new tile
+                break
+    
+    def Escape_attack(self):
+        print("escape the foxes attack on a unsuccessful attack")
 
     def Eating(self): # Eating when item next to animal
         print("get eating working")
@@ -37,12 +58,16 @@ class Fox_behaviour:
         self.x = x
         self.y = y
         self.energy = 50
-        
-    def Movement(self): # Movement of animals
-        print("get movement working")
-
+        self.standing_on = None
+    
     def Prey_finder(self): # Location of nearest prey
         print("get prey finder working")
+        
+    def Movement(self): # Movement of foxes which hunt and follow
+        print("get movement working")
+    
+    def Pounce(self):
+        print("special ability to jump 2 squares?, extra energy?")
 
     def Eating(self): # Eating when item next to animal
         print("get eating working")
@@ -93,6 +118,9 @@ class Simulation:
 
     def Update_loop(self): # Update eat timestep (dt)
         self.Print_map()
+
+        for hare in self.env.hares:
+            hare.Movement(self.env)
 
         print("Step", self.step)
         self.step += 1
@@ -207,17 +235,24 @@ class Environment:
                     self.grid[y][x] = g
 
     def Spawn_animals(self): # Spawn animals
+        hare_amount = int((self.size_grid * self.size_grid) * 0.05) # 45 initial hares
+        fox_amount = int((self.size_grid * self.size_grid) * 0.01) # 9 initial foxes
 
-        for y in range(self.size_grid):
-            for x in range(self.size_grid):
+        grass_tiles = [(g.x, g.y) for g in self.grass]
+        spawn_tiles = random.sample(grass_tiles, hare_amount)
+        
+        for x, y in spawn_tiles:
+            h = Hare(x, y)
+            self.hares.append(h)
+            self.grid[y][x] = h
+        
+        grass_tiles = [(g.x, g.y) for g in self.grass]
+        spawn_tiles = random.sample(grass_tiles, fox_amount)
 
-                
-                if isinstance(self.grid[y][x], Grass):
-                    self.grid[y][x] = None
-
-                    h = Hare(x, y)
-                    self.hares.append(h)
-                    self.grid[y][x] = h
+        for x, y in spawn_tiles:
+            f = Fox(x, y)
+            self.foxes.append(f)
+            self.grid[y][x] = f
     
     def remove_hare(self, hare):
         self.grid[hare.y][hare.x] = None
@@ -235,7 +270,7 @@ class Environment:
             return f"{GREEN}G{RESET}"
 
         if isinstance(cell, Hare):
-            return f"{YELLOW}R{RESET}"
+            return f"{YELLOW}H{RESET}"
 
         if isinstance(cell, Fox):
             return f"{RED}F{RESET}"
