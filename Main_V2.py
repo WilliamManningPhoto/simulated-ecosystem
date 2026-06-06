@@ -42,12 +42,19 @@ class Hare_behaviour:
                 env.grid[new_y][new_x] = self    # Move to new tile
                 break
 
+        self.Eating(env)
+
     
     def Escape_attack(self):
         print("escape the foxes attack on a unsuccessful attack")
 
-    def Eating(self): # Eating when item next to animal
-        print("get eating working")
+    def Eating(self, env): # Eating when animal is on prey
+        if isinstance(self.standing_on, Grass):
+            self.energy += 10
+            if self.standing_on in env.grass:
+                env.Remove_grass(self.standing_on)
+            self.standing_on = None
+
     
     def Mate_finder(self):
         print("find mate")
@@ -135,8 +142,6 @@ class Grass:
         self.x = x
         self.y = y
 
-    def Plant_growth(self): # Reproduction
-        print("grow ma plants mate")
 
 class Hare(Hare_behaviour):
     prey = (Grass,)
@@ -148,15 +153,17 @@ class Fox(Fox_behaviour):
     vision_range = 5
 
 class Simulation:
-    def __init__(self,env): # Working year cycle (dt)
+    def __init__(self, env, data): # Working year cycle (dt)
+        self.days = 20 # Modify for length of simulation
         self.env = env
-        self.year = 365 * 24 # Modify for length of simulation
+        self.data = data
+        self.year = self.days * 24 
         self.step = 0
 
-    def Day_cycle(self): # Day/night for active/inactive animals
+    def Day_cycle(self): # Day/night for active/inactive animals, slow metabolism at night?
         print("day cycle get working")
 
-    def Weather_cycle(self): # Weather for hunting conditions
+    def Weather_cycle(self): # Weather for hunting conditions? lower success chance?
         print("Get simulation running")
 
     def Print_map(self):
@@ -164,16 +171,23 @@ class Simulation:
             print(" ".join(self.env.symbol(cell) for cell in row))
 
     def Update_loop(self): # Update eat timestep (dt)
+
+        self.data.Statistics()
+
+        print(f"Grass tiles on grid: {sum(1 for row in self.env.grid for cell in row if isinstance(cell, Grass))}")
+        print(f"Grass in list: {len(self.env.grass)}")
+
+        self.env.Grow_grass()
             
         for hare in list(self.env.hares):  # list() so we can remove during iteration
             hare.Movement(self.env)
             if hare.energy <= 0:
-                self.env.remove_hare(hare)
+                self.env.Remove_hare(hare)
 
         for fox in list(self.env.foxes):
             fox.Movement(self.env)
             if fox.energy <= 0:
-                self.env.remove_fox(fox)
+                self.env.Remove_fox(fox)
 
         self.Print_map()
         print("Step", self.step)
@@ -183,9 +197,12 @@ class Environment:
     def __init__(self):
         self.size_grid = 30
         self.rocks = []
-        self.grass = []
         self.hares = []
         self.foxes = []
+
+        self.history_rabbits = []
+        self.history_foxes = []
+        self.history_grass = []
 
     def Terrain_generation(self): # Generate basic terrain grid
         self.grid = [[None for _ in range(self.size_grid)] for _ in range(self.size_grid)] # Setup of grid size
@@ -277,42 +294,59 @@ class Environment:
             R = Rocks(x, y)
             self.rocks.append(R)
             self.grid[y][x] = R
+    
+    @property
+    def grass(self):
+        return [cell for row in self.grid for cell in row if isinstance(cell, Grass)]
 
-    def Spawn_plants(self): # Spawn Plants such as grass
-
+    def Spawn_plants(self): # Spawn plants such as grass
         for y in range(self.size_grid):
             for x in range(self.size_grid):
-
                 if self.grid[y][x] is None:
-                    g = Grass(x, y)
-                    self.grass.append(g)
-                    self.grid[y][x] = g
+                    self.grid[y][x] = Grass(x, y)
 
-    def Spawn_animals(self): # Spawn animals
+    def Spawn_animals(self):
         hare_amount = int((self.size_grid * self.size_grid) * 0.05) # 45 initial hares
         fox_amount = int((self.size_grid * self.size_grid) * 0.01) # 9 initial foxes
 
         grass_tiles = [(g.x, g.y) for g in self.grass]
         spawn_tiles = random.sample(grass_tiles, hare_amount)
-        
+
         for x, y in spawn_tiles:
             h = Hare(x, y)
+            h.standing_on = None
             self.hares.append(h)
             self.grid[y][x] = h
-        
+
         grass_tiles = [(g.x, g.y) for g in self.grass]
         spawn_tiles = random.sample(grass_tiles, fox_amount)
 
         for x, y in spawn_tiles:
             f = Fox(x, y)
+            f.standing_on = None
             self.foxes.append(f)
             self.grid[y][x] = f
     
-    def remove_hare(self, hare):
+    def Grow_grass(self): # Grow grass into empty spaces
+        claimed = set()
+        current_grass = self.grass
+        for grass in current_grass:
+            if random.random() < 0.10:
+                dx, dy = random.choice([(0,1),(0,-1),(1,0),(-1,0)])
+                new_x, new_y = grass.x + dx, grass.y + dy
+                if 0 <= new_x < self.size_grid and 0 <= new_y < self.size_grid:
+                    if self.grid[new_y][new_x] is None and (new_x, new_y) not in claimed:
+                        claimed.add((new_x, new_y))
+                        self.grid[new_y][new_x] = Grass(new_x, new_y)
+    
+    def Remove_grass(self, grass):
+        self.grid[grass.y][grass.x] = None
+
+    def Remove_hare(self, hare):
         self.grid[hare.y][hare.x] = hare.standing_on
         self.hares.remove(hare)
 
-    def remove_fox(self, fox):
+    def Remove_fox(self, fox):
         self.grid[fox.y][fox.x] = fox.standing_on
         self.foxes.remove(fox)
 
@@ -332,17 +366,32 @@ class Environment:
         return "."
         
 class Data_Collection:
+    def __init__(self, env):
+        self.env = env
+
     def Statistics(self): # Stats on animals alive
-        print("get statistics working")
+
+        self.env.history_grass.append(len(self.env.grass))
+        self.env.history_rabbits.append(len(self.env.hares))
+        self.env.history_foxes.append(len(self.env.foxes))
     
-    def Graphs(self): # Graphing said stats
-        print("get graph showing")
+    def Graphs(self, env): # Graphing said stats
+        plt.plot(env.history_rabbits, label="Rabbits")
+        plt.plot(env.history_foxes, label="Foxes")
+        plt.plot(env.history_grass, label="Grass")
+
+        plt.legend()
+        plt.show()
             
 E = Environment()
-S = Simulation(E)
+D = Data_Collection(E)
+S = Simulation(E, D)
+
 
 E.Terrain_generation()
 
 for steps in range(S.year):
     S.Update_loop()
     input("Press Enter for next step...")
+
+D.Graphs(E)
