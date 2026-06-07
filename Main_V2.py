@@ -24,8 +24,6 @@ class Hare_behaviour:
         self.eating_cooldown = max(0, self.eating_cooldown - 1)
         self.reproduction_cooldown = max(0, self.reproduction_cooldown - 1)
 
-
-
         directions = [(0,1), (0,-1), (1,0), (-1,0)]
         random.shuffle(directions)
 
@@ -53,23 +51,19 @@ class Hare_behaviour:
         if self.energy >= 50 and self.reproduction_cooldown <= 0:
             self.Reproduction(env)
             self.energy -= 30
-            self.reproduction_cooldown = 2
-
-    
-    def Escape_attack(self):
-        print("escape the foxes attack on a unsuccessful attack")
+            self.reproduction_cooldown = 3
 
     def Eating(self, env): # Eating when animal is on prey
 
         if isinstance(self.standing_on, Grass):
             if self.eating_cooldown <= 0:
-                self.energy += 10
+                self.energy += random.randint(5, 15)
                 env.Remove_grass(self.standing_on)
                 self.standing_on = None
                 self.eating_cooldown = self.prey_cooldown
     
     def Reproduction(self, env): # Reproduce asexually
-        directions = [(0,1), (0,-1), (1,0), (-1,0)]
+        directions = [(0,1), (0,-1), (1,0), (-1,0), (1,1), (1,-1), (-1,1), (-1,-1)]
         random.shuffle(directions)
 
         for dx, dy in directions:
@@ -83,6 +77,7 @@ class Hare_behaviour:
                 baby = Hare(new_x, new_y)
                 baby.energy = 20
                 baby.standing_on = env.grid[new_y][new_x]
+                baby.reproduction_cooldown = 8
                 env.hares.append(baby)
                 env.grid[new_y][new_x] = baby
                 return  # Only spawn one baby
@@ -114,8 +109,9 @@ class Fox_behaviour:
         return nearest
             
     def Movement(self, env): # Movement of fox
-        self.energy -= 1
+        self.energy -= 4
         self.eating_cooldown = max(0, self.eating_cooldown - 1)
+        self.reproduction_cooldown = max(0, self.reproduction_cooldown - 1)
 
         target = self.Prey_finder(env)
 
@@ -152,24 +148,20 @@ class Fox_behaviour:
         if self.energy >= 150 and self.reproduction_cooldown <= 0:
             self.Reproduction(env)
             self.energy -= 100
-            self.reproduction_cooldown = 5
-
-        
-    def Pounce(self):
-        print("special ability to jump 2 squares?, extra energy?")
+            self.reproduction_cooldown = 24
 
     def Eating(self, env): # Eating when item next to animal
 
         if isinstance(self.standing_on, Hare):
             if self.eating_cooldown <= 0:
-                self.energy += 40
+                self.energy += random.randint(30, 60)
                 eaten = self.standing_on
                 self.standing_on = None
                 env.Remove_hare(eaten)
                 self.eating_cooldown = self.prey_cooldown
                 
     def Reproduction(self, env): # Reproduce asexually
-        directions = [(0,1), (0,-1), (1,0), (-1,0)]
+        directions = [(0,1), (0,-1), (1,0), (-1,0), (1,1), (1,-1), (-1,1), (-1,-1)]
         random.shuffle(directions)
 
         for dx, dy in directions:
@@ -182,6 +174,7 @@ class Fox_behaviour:
             if env.grid[new_y][new_x] is None or isinstance(env.grid[new_y][new_x], Grass):
                 baby = Fox(new_x, new_y)
                 baby.standing_on = None
+                baby.reproduction_cooldown = 36
                 env.foxes.append(baby)
                 env.grid[new_y][new_x] = baby
                 return  # Only spawn one baby
@@ -207,11 +200,11 @@ class Hare(Hare_behaviour):
 class Fox(Fox_behaviour):
     prey = (Hare,)
     vision_range = 5
-    prey_cooldown = 8
+    prey_cooldown = 6
 
 class Simulation:
     def __init__(self, env, data): # Working year cycle (dt)
-        self.days = 150 # Modify for length of simulation
+        self.days = 100 # Modify for length of simulation
         self.env = env
         self.data = data
         self.year = self.days * 24 
@@ -231,16 +224,19 @@ class Simulation:
 
         self.data.Statistics()
         self.env.Grow_grass()
-            
-        for hare in list(self.env.hares):  # list() so we can remove during iteration
-            hare.Movement(self.env)
-            if hare.energy <= 0:
-                self.env.Remove_hare(hare)
 
-        for fox in list(self.env.foxes):
+        for fox in list(self.env.foxes): # Fox first because i want to
             fox.Movement(self.env)
             if fox.energy <= 0:
                 self.env.Remove_fox(fox)
+            
+        for hare in list(self.env.hares):
+            if random.random() > 0.3:
+                hare.Movement(self.env)
+            if hare.energy <= 0:
+                self.env.Remove_hare(hare)
+
+
 
         #self.Print_map()
         print(f"Grass: {len(self.env.grass)}")
@@ -251,7 +247,7 @@ class Simulation:
 
 class Environment:
     def __init__(self):
-        self.size_grid = 60
+        self.size_grid = 70
         self.rocks = []
         self.hares = []
         self.foxes = []
@@ -387,7 +383,7 @@ class Environment:
         claimed = set()
         current_grass = self.grass
         for grass in current_grass:
-            if random.random() < 0.5: # Grass spawn rate adjust for more/less
+            if random.random() < 0.4: # Grass spawn rate adjust for more/less
                 dx, dy = random.choice([(0,1),(0,-1),(1,0),(-1,0),(0,2),(0,-2),(2,0),(-2,0),(1,1),(1,-1),(1,-1),(-1,-1)])
                 new_x, new_y = grass.x + dx, grass.y + dy
                 if 0 <= new_x < self.size_grid and 0 <= new_y < self.size_grid:
@@ -440,8 +436,6 @@ class Data_Collection:
         plt.plot(env.history_rabbits, label="Rabbits")
         plt.plot(env.history_foxes, label="Foxes")
         #plt.plot(env.history_grass, label="Grass")
-
-        plt.legend()
         plt.show()
 
 '''
@@ -461,7 +455,7 @@ D.Graphs(E)
 all_hare_runs = []
 all_fox_runs = []
 
-for run in range(5):
+for run in range(1): # Modify for how many times to run
     E = Environment()
     D = Data_Collection(E)
     S = Simulation(E, D)
@@ -471,8 +465,22 @@ for run in range(5):
     all_hare_runs.append(E.history_rabbits)
     all_fox_runs.append(E.history_foxes)
 
-for run in all_hare_runs:
-    plt.plot(run, color='yellow', alpha=0.4)
-for run in all_fox_runs:
-    plt.plot(run, color='red', alpha=0.4)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+
+for i, run in enumerate(all_hare_runs):
+    ax1.plot(run, color='grey', label="Hares" if i == 0 else None)
+ax1.set_xlabel("Step")
+ax1.set_ylabel("Population")
+ax1.set_title("Hares")
+ax1.legend()
+
+for i, run in enumerate(all_fox_runs):
+    ax2.plot(run, color='red', label="Foxes" if i == 0 else None)
+ax2.set_xlabel("Step")
+ax2.set_ylabel("Population")
+ax2.set_title("Foxes")
+ax2.legend()
+
+plt.suptitle("Predator-Prey Simulation")
+plt.tight_layout()
 plt.show()
