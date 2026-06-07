@@ -114,7 +114,7 @@ class Fox_behaviour:
         return nearest
             
     def Movement(self, env): # Movement of fox
-        self.energy -= 2
+        self.energy -= 1
         self.eating_cooldown = max(0, self.eating_cooldown - 1)
 
         target = self.Prey_finder(env)
@@ -211,7 +211,7 @@ class Fox(Fox_behaviour):
 
 class Simulation:
     def __init__(self, env, data): # Working year cycle (dt)
-        self.days = 365 # Modify for length of simulation
+        self.days = 150 # Modify for length of simulation
         self.env = env
         self.data = data
         self.year = self.days * 24 
@@ -242,7 +242,7 @@ class Simulation:
             if fox.energy <= 0:
                 self.env.Remove_fox(fox)
 
-        self.Print_map()
+        #self.Print_map()
         print(f"Grass: {len(self.env.grass)}")
         print(f"Hares: {len(self.env.hares)}")
         print(f"Foxes: {len(self.env.foxes)}")
@@ -251,7 +251,7 @@ class Simulation:
 
 class Environment:
     def __init__(self):
-        self.size_grid = 50
+        self.size_grid = 60
         self.rocks = []
         self.hares = []
         self.foxes = []
@@ -443,7 +443,8 @@ class Data_Collection:
 
         plt.legend()
         plt.show()
-            
+
+'''
 E = Environment()
 D = Data_Collection(E)
 S = Simulation(E, D)
@@ -456,3 +457,22 @@ for steps in range(S.year):
     #input("Press Enter for next step...")
 
 D.Graphs(E)
+'''
+all_hare_runs = []
+all_fox_runs = []
+
+for run in range(5):
+    E = Environment()
+    D = Data_Collection(E)
+    S = Simulation(E, D)
+    E.Terrain_generation()
+    for steps in range(S.year):
+        S.Update_loop()
+    all_hare_runs.append(E.history_rabbits)
+    all_fox_runs.append(E.history_foxes)
+
+for run in all_hare_runs:
+    plt.plot(run, color='yellow', alpha=0.4)
+for run in all_fox_runs:
+    plt.plot(run, color='red', alpha=0.4)
+plt.show()
