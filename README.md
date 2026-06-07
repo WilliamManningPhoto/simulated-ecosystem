@@ -7,6 +7,7 @@ The simulation demonstrates population dynamics, resource competition, reproduct
 ## Features
 
 * Grid-based ecosystem simulation
+* Terrain generation
 * Grass growth and spreading
 * Rabbit foraging behavior
 * Fox hunting behavior with escape mechanics
@@ -58,8 +59,9 @@ Enter the size of the world: (35 is for the best!)
 
 The simulation will run for a fixed number of timesteps and display a graph showing population changes over time.
 
-## Example Population Graph
+## Example Population Graph 1
 <img width="640" height="480" alt="Ecosystem_trial" src="https://github.com/user-attachments/assets/be3f39c8-3b09-4dc8-b499-0b360bebcc86" />
+
 
 The generated graph tracks:
 
@@ -67,18 +69,17 @@ The generated graph tracks:
 * Fox population
 * Grass population
 
+## Example Population Graph 2
+<img width="640" height="480" alt="Ecosystem_trial_V2" src="https://github.com/user-attachments/assets/dc73dbcf-64f3-43a6-a5ac-311064b9fc98" />
+
+The generated graph tracks:
+
+* Rabbit population
+* Fox population
+
 This allows you to observe predator-prey cycles, ecosystem stability, and extinction events. ( It will crash from unstable ecosystem :) )
 
 ## Simulation Mechanics
-
-### Energy System
-
-| Species | Starting Energy | Energy Loss | Energy Gain |
-| ------- | --------------- | ----------- | ----------- |
-| Rabbit  | 10              | -1/turn     | +5 grass    |
-| Fox     | 10              | -3/turn     | +10 rabbit  |
-
-Animals die when their energy reaches zero.
 
 ### Reproduction
 
@@ -92,17 +93,6 @@ After reproduction:
 
 * Energy is reduced
 * A cooldown is applied
-
-## Future Improvements ( Redo whole program and build up with these)
-
-* Animal aging
-* Lifespans
-* Seasons and weather
-* Additional species
-* Disease mechanics
-* Obstacles and terrain
-* Real-time visualization with Pygame
-* Configurable simulation settings
 
 ## License
 
