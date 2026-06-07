@@ -1,5 +1,9 @@
-### Confined grid size of 30 for simulation consistency
-### Time frame of 1 year for simulation consistency
+
+NUM_RUNS = 1
+GRID_SIZE = 100
+SIMULATION_DAYS = 365
+HARE_SPAWN_RATE = 0.05
+FOX_SPAWN_RATE = 0.01
 
 import random
 import matplotlib.pyplot as plt
@@ -51,7 +55,7 @@ class Hare_behaviour:
         if self.energy >= 50 and self.reproduction_cooldown <= 0:
             self.Reproduction(env)
             self.energy -= 30
-            self.reproduction_cooldown = 3
+            self.reproduction_cooldown = 2
 
     def Eating(self, env): # Eating when animal is on prey
 
@@ -77,7 +81,7 @@ class Hare_behaviour:
                 baby = Hare(new_x, new_y)
                 baby.energy = 20
                 baby.standing_on = env.grid[new_y][new_x]
-                baby.reproduction_cooldown = 8
+                baby.reproduction_cooldown = 5
                 env.hares.append(baby)
                 env.grid[new_y][new_x] = baby
                 return  # Only spawn one baby
@@ -204,7 +208,7 @@ class Fox(Fox_behaviour):
 
 class Simulation:
     def __init__(self, env, data): # Working year cycle (dt)
-        self.days = 100 # Modify for length of simulation
+        self.days = SIMULATION_DAYS
         self.env = env
         self.data = data
         self.year = self.days * 24 
@@ -239,15 +243,12 @@ class Simulation:
 
 
         #self.Print_map()
-        print(f"Grass: {len(self.env.grass)}")
-        print(f"Hares: {len(self.env.hares)}")
-        print(f"Foxes: {len(self.env.foxes)}")
-        print("Step", self.step)
+        print("Step", self.step, "/", self.year)
         self.step += 1
 
 class Environment:
     def __init__(self):
-        self.size_grid = 70
+        self.size_grid = GRID_SIZE
         self.rocks = []
         self.hares = []
         self.foxes = []
@@ -358,8 +359,8 @@ class Environment:
                     self.grid[y][x] = Grass(x, y)
 
     def Spawn_animals(self):
-        hare_amount = int((self.size_grid * self.size_grid) * 0.02) # initial hares
-        fox_amount = int((self.size_grid * self.size_grid) * 0.005) # initial foxes
+        hare_amount = int((self.size_grid * self.size_grid) * HARE_SPAWN_RATE) # initial hares
+        fox_amount = int((self.size_grid * self.size_grid) * FOX_SPAWN_RATE) # initial foxes
 
         grass_tiles = [(g.x, g.y) for g in self.grass]
         spawn_tiles = random.sample(grass_tiles, hare_amount)
@@ -438,24 +439,11 @@ class Data_Collection:
         #plt.plot(env.history_grass, label="Grass")
         plt.show()
 
-'''
-E = Environment()
-D = Data_Collection(E)
-S = Simulation(E, D)
 
-
-E.Terrain_generation()
-
-for steps in range(S.year):
-    S.Update_loop()
-    #input("Press Enter for next step...")
-
-D.Graphs(E)
-'''
 all_hare_runs = []
 all_fox_runs = []
 
-for run in range(1): # Modify for how many times to run
+for run in range(NUM_RUNS):
     E = Environment()
     D = Data_Collection(E)
     S = Simulation(E, D)
@@ -465,22 +453,34 @@ for run in range(1): # Modify for how many times to run
     all_hare_runs.append(E.history_rabbits)
     all_fox_runs.append(E.history_foxes)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 6))
+fig.suptitle("Predator-Prey Simulation")
 
-for i, run in enumerate(all_hare_runs):
-    ax1.plot(run, color='grey', label="Hares" if i == 0 else None)
+# Just hares being plotted
+ax1.set_title("Hares")
+for run in all_hare_runs:
+    ax1.plot(run, color='grey')
 ax1.set_xlabel("Step")
 ax1.set_ylabel("Population")
-ax1.set_title("Hares")
-ax1.legend()
+ax1.legend(["Hares"])
 
-for i, run in enumerate(all_fox_runs):
-    ax2.plot(run, color='red', label="Foxes" if i == 0 else None)
+# Just foxes being plotted
+ax2.set_title("Foxes")
+for run in all_fox_runs:
+    ax2.plot(run, color='red')
 ax2.set_xlabel("Step")
 ax2.set_ylabel("Population")
-ax2.set_title("Foxes")
-ax2.legend()
+ax2.legend(["Foxes"])
 
-plt.suptitle("Predator-Prey Simulation")
+# Plot for hares and foxes
+ax3.set_title("Hares vs Foxes")
+for run in all_hare_runs:
+    ax3.plot(run, color='grey', alpha=0.6)
+for run in all_fox_runs:
+    ax3.plot(run, color='red', alpha=0.6)
+ax3.set_xlabel("Step")
+ax3.set_ylabel("Population")
+ax3.legend(["Hares", "Foxes"])
+
 plt.tight_layout()
 plt.show()
