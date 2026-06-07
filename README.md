@@ -59,25 +59,10 @@ Enter the size of the world: (35 is for the best!)
 
 The simulation will run for a fixed number of timesteps and display a graph showing population changes over time.
 
-## Example Population Graph 1
-<img width="640" height="480" alt="Ecosystem_trial" src="https://github.com/user-attachments/assets/be3f39c8-3b09-4dc8-b499-0b360bebcc86" />
+## Example Population Graph
+<img width="1000" height="600" alt="Figure of simulation" src="https://github.com/user-attachments/assets/02696672-3df4-4065-801c-c90a9e0f3180" />
 
-
-The generated graph tracks:
-
-* Rabbit population
-* Fox population
-* Grass population
-
-## Example Population Graph 2
-<img width="640" height="480" alt="Ecosystem_trial_V2" src="https://github.com/user-attachments/assets/dc73dbcf-64f3-43a6-a5ac-311064b9fc98" />
-
-The generated graph tracks:
-
-* Rabbit population
-* Fox population
-
-This allows you to observe predator-prey cycles, ecosystem stability, and extinction events. ( It will crash from unstable ecosystem :) )
+This simulation allows you to observe predator-prey cycles, ecosystem stability, and extinction events. The oscillating population dynamic shown is driven by the Lotka-Volterra effect as prey increases, predators have abundant food and their population rises. The growing predator population then overhunts the prey, causing prey numbers to crash. With food scarce, predators begin to starve and their population falls too. This reduced predator pressure allows the prey to recover, and the cycle repeats.
 
 ## Simulation Mechanics
 
