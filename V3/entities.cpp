@@ -44,3 +44,9 @@ Grass::Grass(int x, int y) : Plant(x, y, 1){
 Tree::Tree(int x, int y) : Plant(x, y, 1){
 
 }
+
+//temps
+void Hare::move() {}
+void Fox::move() {}
+void Grass::plant_reproduction() {}
+void Tree::plant_reproduction() {}

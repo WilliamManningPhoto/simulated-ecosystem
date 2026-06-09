@@ -30,7 +30,11 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "main.cpp",
+                "entities.cpp",
+                "environment.cpp",
+                "renderer.cpp",
+                "simulation.cpp",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "-lsfml-graphics",

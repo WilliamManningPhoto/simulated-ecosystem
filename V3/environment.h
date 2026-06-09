@@ -1,10 +1,13 @@
+#pragma once
+
 #include <vector>
 
 #include "entities.h"
+#include "constants.h"
 
 class Environment{
     public: // Public so other functions can access
-        Entity* grid[100][100];
+        Entity* grid[GRID_SIZE][GRID_SIZE];
 
         // Vectors (lists)
         std::vector<Hare*> hares;
@@ -13,23 +16,15 @@ class Environment{
         std::vector<Tree*> trees;
         std::vector<Rock*> rocks;
 
-    void terrain_generation(
+        Environment();
 
-    );
+    void terrain_generation();
 
-    void obstacle_placement(
+    void obstacle_placement();
 
-    );
+    void plant_placement();
 
-    void plant_placement(
+    void animal_placement();
 
-    );
-
-    void animal_placement(
-        
-    );
-
-    void entity_removal(
-
-    );
+    void entity_removal();
 };
