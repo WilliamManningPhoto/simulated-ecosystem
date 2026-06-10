@@ -52,7 +52,7 @@ void draw_entities(sf::RenderWindow& window, Environment& env){
     }
     for (auto& grass : env.grass){
         sf::RectangleShape square(sf::Vector2f(18.f, 18.f));
-        square.setFillColor(sf::Color::Green);
+        square.setFillColor(sf::Color(34, 139, 34));
 
         int pos_x;
         int pos_y;

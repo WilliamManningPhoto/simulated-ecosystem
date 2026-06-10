@@ -33,15 +33,28 @@ void Environment::obstacle_placement(){
         int x = rand() % GRID_SIZE;
         int y = rand() % GRID_SIZE;
 
-        Rock* r = new Rock(x, y);
-        rocks.push_back(r);
-        grid[y][x] = r;
+        if (grid[y][x] == nullptr){
+            Rock* r = new Rock(x, y);
+            rocks.push_back(r);
+            grid[y][x] = r;
+        }
     }
+    rock_fill();
+}
+
+void Environment::rock_fill(){
+
 }
 
  // Grass, Trees
 void Environment::plant_placement(){
-
+    for (int y = 0; y < GRID_SIZE; y++){
+        for (int x = 0; x < GRID_SIZE; x++){
+            Grass* g = new Grass(x, y);
+            grass.push_back(g);
+            grid[x][y] = g;
+        }
+    }
 }
 
 // Hares and foxes placed
