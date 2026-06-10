@@ -22,8 +22,6 @@ class Environment{
 
     void obstacle_placement();
 
-    void rock_fill();
-
     void plant_placement();
 
     void animal_placement();
