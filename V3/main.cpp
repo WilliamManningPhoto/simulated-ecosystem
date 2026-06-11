@@ -29,7 +29,9 @@ int main() {
 
         if (clock.getElapsedTime().asSeconds() >= TIME_INTERVAL) {
             clock.restart();
-            sim.update_loop();
+            if (sim.running) {
+                sim.update_loop();
+            }
 }
         window.display();
     }

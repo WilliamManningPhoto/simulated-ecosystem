@@ -5,10 +5,11 @@
 
 class Simulation{
     public:
+        int step;
+        bool running;
+        
         Environment& env;
         Simulation(Environment& env);
 
     void update_loop();
-
-    void print_map();
 };

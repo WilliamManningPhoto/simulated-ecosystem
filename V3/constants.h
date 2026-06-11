@@ -5,7 +5,8 @@ const int CELL = 20;
 const int MAP_HEIGHT = 800;
 const int MAP_WIDTH = 1500;
 const int GRID_SIZE = 100;
-const float TIME_INTERVAL = 1; // 1 simulation tick per second
+const float TIME_INTERVAL = 0.001; // 1000 simulation tick per second
+const int SIMULATION_DAYS = 365; // Amount of days to run each runs 24 ticks per day
 
 // Spawn rates of entities
 const float ROCK_MIN = 0.001;

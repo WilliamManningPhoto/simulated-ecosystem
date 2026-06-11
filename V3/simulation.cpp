@@ -1,12 +1,11 @@
+#include <iostream>
 
 #include "simulation.h"
 #include "environment.h"
 #include "entities.h"
 
-Simulation::Simulation(Environment& env) : env(env){
+Simulation::Simulation(Environment& env) : env(env), step(0), running(true){
 
-    update_loop();
-    print_map(); 
 };
 
 
@@ -15,8 +14,10 @@ void Simulation::update_loop(){
     for (auto& hare : env.hares) {
         hare->move(env);
     }
-};
 
-void Simulation::print_map(){
-
+    step++;
+    if (step >= SIMULATION_DAYS * 24) {
+        running = false;
+    }
+    std::cout << "Step: " << step << std::endl;
 };
